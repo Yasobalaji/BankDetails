@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sri Lanka Cheque Printer</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f13;
+  --surface: #161820;
+  --surface2: #1e2028;
+  --border: #2a2d3a;
+  --accent: #c9a84c;
+  --accent2: #e8c96a;
+  --text: #e8e9f0;
+  --muted: #7a7d8f;
+  --danger: #e05252;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:32px 16px 60px; gap:24px; }
+
+h1 { font-size:13px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); }
+
+/* ── Tab bar ── */
+.tabs { display:flex; gap:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; width:100%; max-width:560px; }
+.tab { flex:1; padding:10px 0; text-align:center; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; transition:background .15s, color .15s; border:none; background:transparent; font-family:'DM Sans',sans-serif; letter-spacing:.3px; }
+.tab.active { background:var(--surface2); color:var(--text); }
+.tab:not(.active):hover { color:var(--text); }
+
+/* ── Panels ── */
+.panel { display:none; width:100%; max-width:560px; }
+.panel.active { display:block; }
+
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:26px 26px 22px;
+  display:grid; grid-template-columns:1fr 1fr; gap:16px;
+}
+.full { grid-column:1/-1; }
+
+.field label { display:block; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
+.field input, .field select {
+  width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+  color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; padding:10px 14px; outline:none; transition:border-color .2s;
+}
+.field input:focus, .field select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(201,168,76,.12); }
+.field select option { background:#1e2028; }
+
+/* range field */
+.range-row { display:flex; align-items:center; gap:12px; }
+.range-row input[type=range] { flex:1; accent-color:var(--accent); }
+.range-val { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent2); min-width:44px; text-align:right; }
+
+.words-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent); min-height:44px; line-height:1.6; }
+
+/* section divider inside card */
+.divider { grid-column:1/-1; border:none; border-top:1px solid var(--border); margin:4px 0; }
+.sub-label { grid-column:1/-1; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); padding-top:4px; }
+
+/* buttons */
+.btn-row { grid-column:1/-1; display:flex; gap:10px; }
+.btn { flex:1; font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; border:none; border-radius:10px; padding:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity .2s; }
+.btn-primary { background:linear-gradient(135deg,#c9a84c,#e8c96a); color:#1a1000; }
+.btn-secondary { background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-weight:500; }
+.btn:hover { opacity:.85; }
+
+/* ── CHEQUE preview ── */
+.cheque-wrap { width:100%; max-width:720px; }
+.cheque {
+  width:100%; background:#fdf8ec; border:1.5px solid #b8960a; border-radius:5px;
+  color:#1a1a2e; font-family:'IBM Plex Mono',monospace; overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.55); position:relative;
+}
+.cheque::before {
+  content:"SPECIMEN"; position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%) rotate(-30deg);
+  font-size:68px; font-weight:900; color:rgba(0,0,0,.04);
+  white-space:nowrap; pointer-events:none; letter-spacing:10px;
+}
+.top-band { height:6px; background:linear-gradient(90deg,#b22222,#8b0000); }
+.sec-strip { height:5px; background:repeating-linear-gradient(90deg,#1a3a6b 0,#1a3a6b 2px,transparent 2px,transparent 6px); opacity:.35; }
+.body { padding:20px 26px 16px; }
+.date-section { display:flex; justify-content:flex-end; margin-bottom:14px; gap:10px; align-items:center; }
+.row-label { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; color:#555; white-space:nowrap; padding-bottom:3px; }
+.date-boxes { display:flex; gap:3px; align-items:center; }
+.dseg { background:white; border-bottom:1.5px solid #1a3a6b; min-width:22px; padding:2px 4px; font-size:13px; font-weight:500; text-align:center; color:#1a1a2e; }
+.dsep { font-size:13px; color:#aaa; }
+.row { display:flex; align-items:flex-end; gap:10px; margin-bottom:13px; }
+.line { flex:1; border-bottom:1.5px solid #1a3a6b; padding:0 6px 3px; min-height:26px; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:500; color:#1a1a2e; display:flex; align-items:flex-end; }
+.amount-box { border:1.5px solid #1a3a6b; border-radius:3px; background:white; padding:4px 12px; min-width:140px; text-align:center; }
+.amount-box .lbl { font-size:8px; text-transform:uppercase; letter-spacing:1px; color:#888; }
+.amount-box .val { font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:600; color:#1a3a6b; letter-spacing:1px; }
+.sig-row { display:flex; justify-content:flex-end; margin-top:8px; }
+.sig-block { display:flex; flex-direction:column; align-items:center; width:180px; }
+.sig-line { border-top:1.5px solid #1a3a6b; width:100%; text-align:center; padding-top:4px; font-family:'DM Sans',sans-serif; font-size:9px; color:#888; letter-spacing:1px; text-transform:uppercase; }
+.micr { background:white; border-top:1px dashed rgba(26,58,107,.2); padding:7px 26px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#1a3a6b; letter-spacing:2px; }
+
+/* ── PRINT STYLES ── */
+@media print {
+  @page {
+    size: var(--print-w, 210mm) var(--print-h, 99mm);
+    margin: 0;
+  }
+  body { background:white !important; padding:0; gap:0; align-items:flex-start; }
+  h1, .tabs, .panel { display:none !important; }
+  .cheque-wrap { display:block !important; }
+  .cheque {
+    box-shadow:none !important;
+    border:none !important;
+    border-radius:0 !important;
+    position:absolute;
+    top: var(--print-top, 0mm);
+    left: var(--print-left, 0mm);
+    width: var(--print-w, 210mm) !important;
+  }
+  .cheque::before { opacity:.05; }
+  /* hide bands if option set */
+  .hide-bands .top-band,
+  .hide-bands .sec-strip,
+  .hide-bands .micr { display:none; }
+
+  /* font scale */
+  .line { font-size: var(--print-font, 13.5px) !important; }
+  .amount-box .val { font-size: var(--print-amt-font, 17px) !important; }
+  .dseg { font-size: var(--print-date-font, 13px) !important; }
+}
+</style>
+</head>
+<body>
+
+<h1>Sri Lanka Cheque Printer</h1>
+
+<!-- Tab bar -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('fill')">✏️&nbsp; Fill Cheque</button>
+  <button class="tab" onclick="switchTab('setup')">⚙️&nbsp; Print Setup</button>
+</div>
+
+<!-- ── FILL TAB ── -->
+<div class="panel active" id="tab-fill">
+  <div class="card">
+    <div class="field full">
+      <label>Pay (Payee Name)</label>
+      <input type="text" id="payee" placeholder="Full name or company" oninput="update()">
+    </div>
+    <div class="field">
+      <label>Amount (Rs.)</label>
+      <input type="number" id="amt" placeholder="e.g. 150000.00" oninput="update()">
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="dt" oninput="update()">
+    </div>
+    <div class="field full">
+      <label>Amount in Words (auto)</label>
+      <div class="words-box" id="wordsBox">—</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Cheque
+      </button>
+      <button class="btn btn-secondary" onclick="resetForm()">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRINT SETUP TAB ── -->
+<div class="panel" id="tab-setup">
+  <div class="card">
+
+    <div class="sub-label">Paper / Cheque Size</div>
+
+    <div class="field">
+      <label>Paper Width (mm)</label>
+      <input type="number" id="pw" value="210" min="100" max="300" oninput="applySetup()">
+    </div>
+    <div class="field">
+      <label>Paper Height (mm)</label>
+      <input type="number" id="ph" value="99" min="60" max="200" oninput="applySetup()">
+    </div>
+
+    <div class="field full">
+      <label>Preset Cheque Size</label>
+      <select id="preset" onchange="applyPreset()">
+        <option value="">— Custom —</option>
+        <option value="210x99">Standard SL Cheque (210 × 99 mm)</option>
+        <option value="200x90">Compact (200 × 90 mm)</option>
+        <option value="215x102">A5-ish (215 × 102 mm)</option>
+        <option value="176x83">Small (176 × 83 mm)</option>
+      </select>
+    </div>
+
+    <hr class="divider">
+    <div class="sub-label">Position Offset</div>
+    <div style="grid-column:1/-1; font-size:12px; color:var(--muted); margin-top:-8px; margin-bottom:4px;">Shift printed content to align with your physical cheque.</div>
+
+    <div class="field full">
+      <label>Top Offset (mm) — move text down ↓</label>
+      <div class="range-row">
+        <input type="range" id="offTop" min="-30" max="30" value="0" oninput="applySetup(); document.getElementById('vTop').textContent=this.value+'mm'">
+        <span class="range-val" id="vTop">0mm</span>
+      </div>
+    </div>
+    <div class="field full">
+      <label>Left Offset (mm) — move text right →</label>
+      <div class="range-row">
+        <input type="range" id="offLeft" min="-30" max="30" value="0" oninput="applySetup(); document.getElementById('vLeft').textContent=this.value+'mm'">
+        <span class="range-val" id="vLeft">0mm</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="sub-label">Font Sizes</div>
+
+    <div class="field full">
+      <label>Payee / Words Line (px)</label>
+      <div class="range-row">
+        <input type="range" id="fntMain" min="8" max="20" value="13" oninput="applySetup(); document.getElementById('vMain').textContent=this.value+'px'">
+        <span class="range-val" id="vMain">13px</span>
+      </div>
+    </div>
+    <div class="field full">
+      <label>Amount Number (px)</label>
+      <div class="range-row">
+        <input type="range" id="fntAmt" min="8" max="26" value="17" oninput="applySetup(); document.getElementById('vAmt').textContent=this.value+'px'">
+        <span class="range-val" id="vAmt">17px</span>
+      </div>
+    </div>
+    <div class="field full">
+      <label>Date Digits (px)</label>
+      <div class="range-row">
+        <input type="range" id="fntDate" min="8" max="20" value="13" oninput="applySetup(); document.getElementById('vDate').textContent=this.value+'px'">
+        <span class="range-val" id="vDate">13px</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="sub-label">Print Options</div>
+
+    <div class="field full" style="display:flex; align-items:center; gap:12px;">
+      <input type="checkbox" id="hideBands" style="width:16px;height:16px;accent-color:var(--accent);" onchange="applySetup()">
+      <label for="hideBands" style="text-transform:none; letter-spacing:0; font-size:13px; color:var(--text); cursor:pointer; margin-bottom:0;">
+        Hide decorative bands &amp; MICR line when printing<br>
+        <span style="font-size:11px; color:var(--muted); font-weight:400;">(use this if printing on pre-printed cheque paper)</span>
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="window.print()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print with These Settings
+      </button>
+      <button class="btn btn-secondary" onclick="resetSetup()">↺ Defaults</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── CHEQUE (always rendered, shown/hidden by print) ── -->
+<div class="cheque-wrap">
+  <div class="cheque" id="chequeCard">
+    <div class="top-band"></div>
+    <div class="sec-strip"></div>
+    <div class="body">
+      <div class="date-section">
+        <div class="row-label">Date</div>
+        <div class="date-boxes">
+          <div class="dseg" id="dd">DD</div><div class="dsep">/</div>
+          <div class="dseg" id="mm">MM</div><div class="dsep">/</div>
+          <div class="dseg" id="yy">YYYY</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-label">PAY</div>
+        <div class="line" id="payLine">&nbsp;</div>
+        <div class="row-label">OR BEARER</div>
+      </div>
+      <div class="row">
+        <div class="line" id="wordsLine">&nbsp;</div>
+        <div class="row-label">ONLY</div>
+        <div class="amount-box">
+          <div class="lbl">Rs. / LKR</div>
+          <div class="val" id="amtBox">0.00</div>
+        </div>
+      </div>
+      <div class="sig-row">
+        <div class="sig-block">
+          <div style="height:28px;"></div>
+          <div class="sig-line">Authorised Signature</div>
+        </div>
+      </div>
+    </div>
+    <div class="micr">
+      <span>⑆ 000000 ⑆</span>
+      <span>⑈ 7010 ⑈</span>
+      <span>⑇ ——————————— ⑇</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Amount words ── */
+const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+const tens  = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+function n2w(n){
+  if(!n)return"";if(n<20)return ones[n]+" ";if(n<100)return tens[Math.floor(n/10)]+(n%10?" "+ones[n%10]:"")+" ";
+  if(n<1000)return ones[Math.floor(n/100)]+" Hundred "+n2w(n%100);
+  if(n<100000)return n2w(Math.floor(n/1000))+"Thousand "+n2w(n%1000);
+  if(n<10000000)return n2w(Math.floor(n/100000))+"Lakh "+n2w(n%100000);
+  return n2w(Math.floor(n/10000000))+"Crore "+n2w(n%10000000);
+}
+function toWords(v){
+  if(!v||isNaN(v))return"—";
+  const[rp,cp]=parseFloat(v).toFixed(2).split(".");
+  let w="Rupees "+n2w(parseInt(rp)).trim();
+  if(parseInt(cp)>0)w+=" and Cents "+n2w(parseInt(cp)).trim();
+  return w+" Only";
+}
+function pad(v,l=2){return String(v).padStart(l,'0');}
+
+/* ── Fill update ── */
+function update(){
+  const dt=document.getElementById('dt').value;
+  if(dt){const d=new Date(dt);document.getElementById('dd').textContent=pad(d.getDate());document.getElementById('mm').textContent=pad(d.getMonth()+1);document.getElementById('yy').textContent=d.getFullYear();}
+  else{document.getElementById('dd').textContent='DD';document.getElementById('mm').textContent='MM';document.getElementById('yy').textContent='YYYY';}
+  const payee=document.getElementById('payee').value;
+  document.getElementById('payLine').textContent=payee||'\u00a0';
+  const amt=document.getElementById('amt').value;
+  const words=toWords(amt);
+  document.getElementById('wordsBox').textContent=words;
+  document.getElementById('wordsLine').textContent=words!=='—'?words:'\u00a0';
+  document.getElementById('amtBox').textContent=amt?parseFloat(amt).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2}):'0.00';
+}
+function resetForm(){
+  ['payee','amt'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('dt').value=new Date().toISOString().split('T')[0];
+  update();
+}
+
+/* ── Tabs ── */
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['fill','setup'][i]===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+}
+
+/* ── Print Setup ── */
+function applySetup(){
+  const pw   = document.getElementById('pw').value    || 210;
+  const ph   = document.getElementById('ph').value    || 99;
+  const top  = document.getElementById('offTop').value || 0;
+  const left = document.getElementById('offLeft').value|| 0;
+  const fMain= document.getElementById('fntMain').value|| 13;
+  const fAmt = document.getElementById('fntAmt').value || 17;
+  const fDate= document.getElementById('fntDate').value|| 13;
+  const hide = document.getElementById('hideBands').checked;
+
+  const root = document.documentElement;
+  root.style.setProperty('--print-w',    pw+'mm');
+  root.style.setProperty('--print-h',    ph+'mm');
+  root.style.setProperty('--print-top',  top+'mm');
+  root.style.setProperty('--print-left', left+'mm');
+  root.style.setProperty('--print-font', fMain+'px');
+  root.style.setProperty('--print-amt-font', fAmt+'px');
+  root.style.setProperty('--print-date-font', fDate+'px');
+
+  document.getElementById('chequeCard').classList.toggle('hide-bands', hide);
+}
+
+function applyPreset(){
+  const v=document.getElementById('preset').value;
+  if(!v)return;
+  const[w,h]=v.split('x');
+  document.getElementById('pw').value=w;
+  document.getElementById('ph').value=h;
+  applySetup();
+}
+
+function resetSetup(){
+  document.getElementById('pw').value=210;
+  document.getElementById('ph').value=99;
+  document.getElementById('preset').value='210x99';
+  document.getElementById('offTop').value=0; document.getElementById('vTop').textContent='0mm';
+  document.getElementById('offLeft').value=0; document.getElementById('vLeft').textContent='0mm';
+  document.getElementById('fntMain').value=13; document.getElementById('vMain').textContent='13px';
+  document.getElementById('fntAmt').value=17;  document.getElementById('vAmt').textContent='17px';
+  document.getElementById('fntDate').value=13; document.getElementById('vDate').textContent='13px';
+  document.getElementById('hideBands').checked=false;
+  applySetup();
+}
+
+/* init */
+document.getElementById('dt').value=new Date().toISOString().split('T')[0];
+update();
+applySetup();
+</script>
+</body>
+</html>
