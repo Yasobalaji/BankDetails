@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Letter Generator — Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d12;--surface:#11141c;--surface2:#171b26;
+  --border:#22273a;--border2:#2c3248;
+  --gold:#c9a84c;--gold-l:#e8c96a;--gold-d:rgba(201,168,76,.13);--gold-b:rgba(201,168,76,.26);
+  --text:#e5e3dd;--muted:#888898;--dim:#484860;
+  --blue:#4a7fa5;--green:#4aaa7a;--red:#a84a4a;
+  --paper-bg:#fcfbf8;--r:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* TOPBAR */
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 14px;height:52px;display:flex;align-items:center;gap:9px;flex-shrink:0;z-index:50}
+.logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:var(--gold);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.logo-dot{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.vd{width:1px;height:26px;background:var(--border);flex-shrink:0}
+.tf{display:flex;flex-direction:column;gap:1px;min-width:0}
+.tf label{font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;font-family:'DM Mono',monospace;white-space:nowrap}
+.tf select,.tf input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:4px 8px;outline:none;transition:border-color .15s;height:28px}
+.tf select{min-width:148px;cursor:pointer}.tf input{min-width:100px}
+.tf select:focus,.tf input:focus{border-color:var(--gold)}
+.top-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+.btn{padding:5px 13px;border-radius:7px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;height:28px}
+.btn-gold{background:var(--gold);color:#0b0d12}.btn-gold:hover{background:var(--gold-l)}
+.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border2)}.btn-outline:hover{background:var(--surface2);color:var(--text)}
+.btn-blue{background:rgba(74,127,165,.16);color:#7ab5d8;border:1px solid rgba(74,127,165,.28)}.btn-blue:hover{background:rgba(74,127,165,.28)}
+.btn-green{background:rgba(74,170,122,.16);color:#7ad4a8;border:1px solid rgba(74,170,122,.28)}.btn-green:hover{background:rgba(74,170,122,.28)}
+.btn-purple{background:rgba(140,100,200,.16);color:#c0a0e8;border:1px solid rgba(140,100,200,.28)}.btn-purple:hover{background:rgba(140,100,200,.28)}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+
+/* SHELL */
+#shell{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+#sidebar{width:244px;min-width:190px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#sb-top{padding:11px 11px 8px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:7px}
+#sb-search{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;transition:border-color .15s}
+#sb-search:focus{border-color:var(--gold)}
+#sb-search::placeholder{color:var(--dim)}
+#upload-zone{border:1.5px dashed var(--border2);border-radius:7px;padding:8px 11px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;width:100%;text-align:left}
+#upload-zone:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-d)}
+#cat-list{flex:1;overflow-y:auto;padding:5px 0}
+.cat-btn{display:flex;align-items:center;gap:7px;width:100%;padding:7px 12px;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;text-align:left;transition:all .15s;border-left:3px solid transparent}
+.cat-btn:hover{color:var(--text);background:var(--surface2)}
+.cat-btn.active{color:var(--gold);background:var(--gold-d);border-left-color:var(--gold)}
+.cat-btn .emoji{font-size:13px;width:16px;text-align:center;flex-shrink:0}
+.cat-btn .badge{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);background:var(--surface2);padding:1px 5px;border-radius:10px}
+.cat-btn.active .badge{color:var(--gold);background:var(--gold-d)}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* GRID */
+#grid-view{flex:1;overflow-y:auto;padding:18px}
+.sec-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.sec-hdr h2{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold)}
+.sec-hdr span{font-size:11px;color:var(--dim)}
+.lg{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:10px;margin-bottom:28px}
+.lcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:border-color .18s,transform .15s;overflow:hidden;animation:fu .2s ease both}
+.lcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.lcard.custom{border-left:3px solid #8c64c8}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.lcard-h{padding:10px 12px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.lcard-h h3{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.ltag{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:20px;background:var(--gold-d);color:var(--gold);white-space:nowrap}
+.ltag.custom{background:rgba(140,100,200,.14);color:#c0a0e8}
+.lcard-prev{padding:8px 12px;font-size:11px;color:var(--dim);line-height:1.5;height:60px;overflow:hidden;position:relative;font-family:'DM Mono',monospace}
+.lcard-prev::after{content:'';position:absolute;bottom:0;left:0;right:0;height:26px;background:linear-gradient(transparent,var(--surface))}
+.lcard-ft{padding:7px 12px;display:flex;gap:5px;align-items:center}
+.bxs{padding:4px 10px;border-radius:5px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.bxs-gold{background:var(--gold-d);color:var(--gold);border:1px solid var(--gold-b)}.bxs-gold:hover{background:var(--gold);color:#0b0d12}
+.bxs-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.bxs-ghost:hover{background:var(--surface2);color:var(--text)}
+.bxs-del{background:rgba(168,74,74,.12);color:#d48a8a;border:1px solid rgba(168,74,74,.22);margin-left:auto}.bxs-del:hover{background:rgba(168,74,74,.24)}
+.no-res{text-align:center;padding:60px 20px;color:var(--dim)}
+.no-res .ico{font-size:32px;margin-bottom:8px}
+
+/* EDITOR */
+#editor-view{flex:1;display:none;flex-direction:column;overflow:hidden}
+#editor-view.open{display:flex}
+#ed-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:9px;flex-shrink:0}
+#ed-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--gold);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ed-body{display:flex;flex:1;overflow:hidden}
+
+/* DETAILS PANEL */
+#dp{width:224px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:5px}
+#dp h4{font-family:'DM Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin:7px 0 3px;padding-top:3px;border-top:1px solid var(--border)}
+#dp h4:first-child{margin-top:0;border-top:none}
+.dpf{display:flex;flex-direction:column;gap:2px}
+.dpf label{font-size:10px;color:var(--muted)}
+.dpf input,.dpf select,.dpf textarea{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;padding:5px 8px;outline:none;transition:border-color .15s;width:100%}
+.dpf input:focus,.dpf select:focus,.dpf textarea:focus{border-color:var(--gold)}
+.dpf textarea{resize:vertical;min-height:44px;line-height:1.5}
+.apply-btn{width:100%;padding:8px;border-radius:7px;border:none;background:var(--gold);color:#0b0d12;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:4px}
+.apply-btn:hover{background:var(--gold-l)}
+
+/* PAPER WRAP */
+#paper-wrap{flex:1;overflow-y:auto;background:var(--bg);padding:22px;display:flex;justify-content:center;align-items:flex-start}
+
+/* A4 PAPER — portrait, no header, tight for single sheet */
+.letter-paper{background:var(--paper-bg);width:210mm;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);overflow:hidden}
+.lp-inner{padding:14mm 17mm 13mm;font-family:'Crimson Text',Georgia,serif;font-size:12pt;line-height:1.7;color:#1a1a1a;white-space:pre-wrap;word-break:break-word}
+
+/* Inline field inputs */
+.fi{display:inline-block;border:none;border-bottom:1.5px solid #b89f4a;background:rgba(201,168,76,.07);color:#1a3264;font-family:'Crimson Text',Georgia,serif;font-size:12pt;line-height:1.3;padding:0 4px;border-radius:3px 3px 0 0;outline:none;min-width:50px;transition:background .15s,border-color .15s;vertical-align:baseline}
+.fi:focus{background:rgba(201,168,76,.14);border-bottom-color:var(--gold)}
+.fi::placeholder{color:#b0916a;font-style:italic;font-size:10pt}
+.fi.filled{border-bottom-color:#4aaa7a;background:rgba(74,170,122,.06);color:#1a3a1a}
+.fi.auto-f{border-bottom-color:#4a7fa5;background:rgba(74,127,165,.06);color:#1a2a40}
+
+/* progress */
+.fill-prog{padding:6px 13px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:9px;border-radius:0 0 6px 6px}
+.fpbar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.fpbar-i{height:100%;background:var(--gold);transition:width .3s;border-radius:2px}
+.fpcnt{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
+.fpcnt b{color:var(--gold)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:18px}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:490px;box-shadow:0 28px 56px rgba(0,0,0,.6);max-height:90vh;display:flex;flex-direction:column}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-head h3{font-family:'Playfair Display',serif;font-size:15px;color:var(--gold)}
+.modal-x{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}.modal-x:hover{color:var(--text)}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
+.tab-row{display:flex;gap:7px;margin-bottom:14px}
+.tab-row .btn{flex:1;justify-content:center;font-size:11px}
+.upload-drop{border:2px dashed var(--border2);border-radius:9px;padding:30px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-drop:hover,.upload-drop.drag{border-color:var(--gold);background:var(--gold-d)}
+.upload-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ud-ico{font-size:32px;margin-bottom:8px}
+.upload-drop p{font-size:12px;color:var(--muted);line-height:1.6}.upload-drop p b{color:var(--text)}
+.upload-drop small{font-size:10px;color:var(--dim);font-family:'DM Mono',monospace}
+.up-st{margin-top:12px;padding:9px 12px;border-radius:7px;font-size:11px;display:none}
+.up-st.ok{background:rgba(74,170,122,.11);color:#7ad4a8;border:1px solid rgba(74,170,122,.24);display:block}
+.up-st.err{background:rgba(168,74,74,.11);color:#d48a8a;border:1px solid rgba(168,74,74,.24);display:block}
+.tips{margin-top:12px;padding:10px 13px;background:var(--surface2);border-radius:7px;font-size:11px;color:var(--muted);line-height:1.8}.tips b{color:var(--text)}
+.mf{display:none;flex-direction:column;gap:7px}
+.mf.show{display:flex}
+.mf-row{display:flex;flex-direction:column;gap:2px}
+.mf-row label{font-size:10px;color:var(--muted)}
+.mf-row input,.mf-row select,.mf-row textarea{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;padding:6px 9px;outline:none;width:100%}
+.mf-row input:focus,.mf-row select:focus,.mf-row textarea:focus{border-color:var(--gold)}
+.mf-row textarea{min-height:90px;resize:vertical;line-height:1.6;font-family:'DM Mono',monospace;font-size:10px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:7px;flex-shrink:0}
+
+/* PRINT — A4 portrait single sheet */
+@media print{
+  @page{size:A4 portrait;margin:0}
+  html,body{height:auto;overflow:visible;background:#fff}
+  #topbar,#sidebar,#ed-topbar,#dp,#grid-view,.fill-prog,.no-print,.modal-bg{display:none!important}
+  #shell,#main,#editor-view,#ed-body,#paper-wrap{display:block!important;overflow:visible!important;height:auto!important;width:100%!important}
+  #editor-view{display:block!important}
+  #paper-wrap{padding:0!important;background:#fff!important;display:block!important}
+  .letter-paper{box-shadow:none!important;border-radius:0!important;width:100%!important;background:#fff!important;page-break-inside:avoid}
+  .lp-inner{padding:11mm 15mm 10mm!important;font-size:10pt!important;line-height:1.62!important;color:#000!important}
+  .fi{border:none!important;border-bottom:1px solid #999!important;background:transparent!important;color:#000!important;font-size:10pt!important;padding:0!important}
+}
+
+/* TOAST */
+#toast{position:fixed;bottom:18px;right:18px;z-index:999;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 15px;font-size:12px;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.5);transform:translateY(14px);opacity:0;transition:all .25s;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo"><div class="logo-dot"></div>BankLetters <span style="font-size:9px;font-family:'DM Mono',monospace;color:var(--muted);margin-left:2px">PRO</span></div>
+  <div class="vd"></div>
+  <div class="tf">
+    <label>🏦 Bank</label>
+    <select id="tb-bank" onchange="syncG()">
+      <option value="">— Select Bank —</option>
+      <option>State Bank of India (SBI)</option><option>HDFC Bank</option><option>ICICI Bank</option>
+      <option>Axis Bank</option><option>Punjab National Bank (PNB)</option><option>Bank of Baroda (BOB)</option>
+      <option>Canara Bank</option><option>Union Bank of India</option><option>Kotak Mahindra Bank</option>
+      <option>IndusInd Bank</option><option>Yes Bank</option><option>IDFC First Bank</option>
+      <option>Federal Bank</option><option>South Indian Bank</option><option>Bank of India (BOI)</option>
+      <option>Indian Bank</option><option>Central Bank of India</option><option>UCO Bank</option>
+      <option>Indian Overseas Bank</option><option>Karnataka Bank</option><option>RBL Bank</option>
+      <option>Bandhan Bank</option><option>CSB Bank</option><option>City Union Bank</option>
+      <option value="custom">✏️ Other / Custom</option>
+    </select>
+  </div>
+  <div class="tf" id="cbank-wrap" style="display:none">
+    <label>Custom Bank</label>
+    <input id="tb-bank-c" placeholder="Bank name" oninput="syncG()">
+  </div>
+  <div class="tf"><label>🏢 Branch</label><input id="tb-branch" placeholder="Branch name" oninput="syncG()"></div>
+  <div class="tf" style="min-width:82px"><label>🔢 Code</label><input id="tb-code" placeholder="001234" style="min-width:82px" oninput="syncG()"></div>
+  <div class="tf"><label>📅 Date</label><input type="date" id="tb-date" oninput="syncG()"></div>
+  <div class="vd"></div>
+  <div class="top-actions">
+    <button class="btn btn-outline no-print" id="btn-back" onclick="showGrid()" style="display:none">← Back</button>
+    <button class="btn btn-blue no-print" id="btn-email" onclick="doEmail()" disabled>✉️ Email</button>
+    <button class="btn btn-green no-print" id="btn-print" onclick="doPrint()" disabled>🖨️ Print A4</button>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div id="shell">
+<aside id="sidebar">
+  <div id="sb-top">
+    <input id="sb-search" placeholder="🔍  Search letters…" oninput="doSearch()">
+    <button id="upload-zone" onclick="openModal()">
+      <span style="font-size:15px">📎</span>
+      <div>
+        <div style="font-size:11px;font-weight:600">Add Letter Format</div>
+        <div style="font-size:10px;color:var(--dim)">Upload .docx / .txt or manual</div>
+      </div>
+    </button>
+  </div>
+  <div id="cat-list"></div>
+</aside>
+
+<div id="main">
+  <div id="grid-view"></div>
+
+  <div id="editor-view">
+    <div id="ed-topbar">
+      <div id="ed-title">Letter Editor</div>
+      <button class="btn btn-outline no-print" onclick="clearFields()" style="font-size:11px;padding:4px 10px;height:26px">🔄 Clear</button>
+    </div>
+    <div id="ed-body">
+      <div id="dp">
+        <h4>Your Details</h4>
+        <div class="dpf"><label>Full Name</label><input id="dp-name" placeholder="Full name" oninput="syncG()"></div>
+        <div class="dpf"><label>Account Number</label><input id="dp-acct" placeholder="Account no." oninput="syncG()"></div>
+        <div class="dpf"><label>TIN Number</label><input id="dp-tin" placeholder="TIN" oninput="syncG()"></div>
+        <div class="dpf"><label>Mobile Number</label><input id="dp-phone" type="tel" placeholder="Phone" oninput="syncG()"></div>
+        <div class="dpf"><label>Email ID</label><input id="dp-email" type="email" placeholder="Email" oninput="syncG()"></div>
+        <div class="dpf"><label>Full Address</label><textarea id="dp-addr" placeholder="Your full address" oninput="syncG()"></textarea></div>
+        <h4>Branch Details</h4>
+        <div class="dpf"><label>Branch Address</label><textarea id="dp-baddr" placeholder="Branch address & city" oninput="syncG()" style="min-height:40px"></textarea></div>
+        <button class="apply-btn" onclick="applyAll()">⚡ Auto-Fill Letter</button>
+      </div>
+
+      <div id="paper-wrap">
+        <div class="letter-paper" id="letter-paper">
+          <div class="lp-inner" id="letter-content"></div>
+          <div class="fill-prog no-print">
+            <div class="fpbar"><div class="fpbar-i" id="fpbar-i" style="width:0%"></div></div>
+            <div class="fpcnt"><b id="fp-done">0</b>/<span id="fp-total">0</span> fields filled</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-bg" id="umodal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3>📎 Add New Letter Format</h3>
+      <button class="modal-x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-row">
+        <button class="btn btn-purple" id="tab-up-btn" onclick="switchTab('up')">📄 Upload .docx / .txt</button>
+        <button class="btn btn-outline" id="tab-mn-btn" onclick="switchTab('mn')">✏️ Enter Manually</button>
+      </div>
+
+      <div id="tab-up">
+        <div class="upload-drop" id="udrop">
+          <input type="file" accept=".docx,.doc,.txt" id="flinput" onchange="handleFile(this)">
+          <div class="ud-ico">📄</div>
+          <p><b>Click to browse</b> or drag & drop</p>
+          <small>Supports .docx · .txt</small>
+        </div>
+        <div class="up-st" id="up-st"></div>
+        <div class="tips">
+          <b>Tips for best results:</b><br>
+          • Use <b>[FIELD NAME]</b> in your document for fillable blanks<br>
+          • e.g. <b>[YOUR NAME]</b>, <b>[ACCOUNT NUMBER]</b>, <b>[DATE]</b><br>
+          • The letter title is taken from the first line of the document
+        </div>
+      </div>
+
+      <div id="tab-mn" style="display:none">
+        <div class="mf show" id="mfform">
+          <div class="mf-row"><label>Letter Title *</label><input id="mf-title" placeholder="e.g. Account Holder Consent Letter"></div>
+          <div class="mf-row">
+            <label>Category *</label>
+            <select id="mf-cat">
+              <option value="Z">⭐ My Custom Letters</option>
+              <option value="A">🏦 A — Account Related</option>
+              <option value="B">💳 B — ATM / Card</option>
+              <option value="C">🌐 C — Online & Mobile</option>
+              <option value="D">💰 D — Loans</option>
+              <option value="E">📄 E — Statements & Certs</option>
+              <option value="F">🔄 F — Personal Updates</option>
+              <option value="G">💸 G — Transactions</option>
+              <option value="H">📑 H — Cheque & DD</option>
+              <option value="I">🏢 I — Business Banking</option>
+              <option value="J">⚠️ J — Complaints</option>
+              <option value="K">🔒 K — Security</option>
+              <option value="L">📦 L — Miscellaneous</option>
+            </select>
+          </div>
+          <div class="mf-row"><label>Tag Label</label><input id="mf-tag" placeholder="e.g. Custom, Account, Loan"></div>
+          <div class="mf-row">
+            <label>Letter Body * — wrap fillable fields in [SQUARE BRACKETS]</label>
+            <textarea id="mf-body" placeholder="Date: [DATE]&#10;&#10;To,&#10;The Branch Manager,&#10;[BANK NAME],&#10;[BRANCH NAME & ADDRESS]&#10;&#10;Subject: ..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveLetter()">💾 Save Format</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+/* ═══════════════════════════════ DATA ════════════════════════════════ */
+const BL=[
+{cat:"A",title:"Account Opening Request",tag:"Account",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Opening a [ACCOUNT TYPE] Account
+
+Respected Sir/Madam,
+
+I am writing to request the opening of a [ACCOUNT TYPE] Account in your esteemed bank. I have been a resident of [CITY] for the past [YEARS] years and wish to avail the banking facilities offered by your branch.
+
+My personal details are as follows:
+
+  Full Name        : [YOUR FULL NAME]
+  Date of Birth    : [DATE OF BIRTH]
+  Occupation       : [OCCUPATION]
+  Contact No.      : [PHONE]
+  Email            : [EMAIL]
+  Permanent Address: [ADDRESS]
+  TIN Number       : [TIN NUMBER]
+
+Documents enclosed: Account Opening Form, photographs (2 copies), Identity Proof, Address Proof.
+
+I kindly request you to process my application and issue the passbook and cheque book upon approval.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Contact: [PHONE]  |  Email: [EMAIL]  |  Date: [DATE]`},
+
+{cat:"A",title:"Account Closing Request",tag:"Account",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Closure of Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER], request closure of the said account with immediate effect.
+
+Reason for closure: [REASON FOR CLOSURE]
+
+Please settle the remaining balance of Rs. [REMAINING BALANCE] and transfer to:
+  Beneficiary: [YOUR FULL NAME]  |  Bank: [TRANSFER TO BANK]  |  Account: [TRANSFER TO ACCOUNT]
+
+Enclosures: Original Passbook, Unused Cheques, Debit Card (cut), Closure Form, Identity Proof.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"A",title:"Joint Account Opening Letter",tag:"Account",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Opening a Joint [ACCOUNT TYPE] Account
+
+Respected Sir/Madam,
+
+We wish to open a Joint Bank Account at your branch under mode: [MODE OF OPERATION].
+
+  First Holder  : [YOUR FULL NAME]  |  DOB: [DATE OF BIRTH]  |  TIN: [TIN NUMBER]  |  Phone: [PHONE]
+  Second Holder : [SECOND HOLDER NAME]  |  DOB: [SECOND HOLDER DOB]  |  TIN: [SECOND HOLDER TIN]  |  Phone: [SECOND HOLDER PHONE]
+
+Mode of Operation: [MODE OF OPERATION]
+
+Enclosures: Account Opening Form, photographs (2 each), Identity Proof, Address Proof for both holders.
+
+First Holder  : [YOUR FULL NAME]        Signature: ____________   Date: [DATE]
+Second Holder : [SECOND HOLDER NAME]    Signature: ____________   Date: [DATE]`},
+
+{cat:"A",title:"Account Reactivation Letter",tag:"Account",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Reactivation of Dormant Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], hold [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER] at your branch. Due to [REASON FOR INACTIVITY], I was unable to transact for the past [INACTIVE PERIOD], and the account has been marked dormant.
+
+I request reactivation of my account. Fresh KYC documents enclosed: Identity Proof, Address Proof, Passport-size photograph.
+
+I assure regular usage henceforth.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"A",title:"Signature Change Request",tag:"Account",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Change of Specimen Signature — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], wish to update my specimen signature due to [REASON FOR CHANGE].
+
+  OLD SIGNATURE  :  _______________________
+  NEW SIGNATURE  :  _______________________
+
+Enclosures: Signature Change Form, Self-attested Identity Proof, Photograph.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"A",title:"Nominee Addition/Change Letter",tag:"Account",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for [NOMINATION TYPE] of Nominee — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], wish to [NOMINATION TYPE] the nominee.
+
+New Nominee: [NOMINEE NAME]  |  DOB: [NOMINEE DOB]  |  Relationship: [NOMINEE RELATIONSHIP]  |  Phone: [NOMINEE PHONE]
+
+Enclosures: Nomination Form, nominee's identity proof copy.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"A",title:"Account Transfer to Another Branch",tag:"Account",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Transfer of Account No. [ACCOUNT NUMBER] to [TARGET BRANCH NAME]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER], request transfer of my account to:
+
+  Branch: [TARGET BRANCH NAME]  |  Address: [TARGET BRANCH ADDRESS]
+  Reason: [REASON FOR TRANSFER]
+
+Enclosures: Original Passbook, Unused Cheque Book, Debit Card, Updated Address Proof, KYC documents.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Contact: [PHONE]  |  Email: [EMAIL]  |  Date: [DATE]`},
+
+{cat:"B",title:"ATM Card Request",tag:"ATM/Card",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Issuance of ATM/Debit Card — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], request issuance of a [CARD NETWORK] / [CARD VARIANT] ATM/Debit Card.
+
+  Registered Mobile: [PHONE]  |  Delivery Address: [ADDRESS]
+
+Enclosures: ATM Card Application Form, Identity Proof copy.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"B",title:"Lost ATM Card Block Request",tag:"ATM/Card",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: URGENT — Request to Block Lost/Stolen ATM Card — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], inform you that my ATM/Debit Card (last 4 digits: [CARD LAST 4 DIGITS]) has been [lost/stolen] on [INCIDENT DATE] at [INCIDENT LOCATION].
+
+I blocked the card via [BLOCKED VIA] on [DATE], Reference No.: [BLOCK REFERENCE].
+
+I request: 1. Permanent block  2. Replacement card  3. Investigation of unauthorized transactions after [INCIDENT DATE].
+
+Thanking you urgently,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"B",title:"Credit Card Application",tag:"ATM/Card",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Application for Credit Card
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], account holder (Account No. [ACCOUNT NUMBER]) at your branch, wish to apply for a [CARD VARIANT] Credit Card.
+
+  DOB: [DATE OF BIRTH]  |  Occupation: [EMPLOYMENT TYPE]  |  Employer: [EMPLOYER NAME]
+  Annual Income: Rs. [ANNUAL INCOME]  |  TIN: [TIN NUMBER]
+  Contact: [PHONE]  |  Email: [EMAIL]
+
+Enclosures: Credit Card Application Form, salary slips/ITR, Identity Proof, Address Proof, Photograph.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Date: [DATE]`},
+
+{cat:"B",title:"Unauthorized Transaction Complaint",tag:"ATM/Card",body:`Date: [DATE]
+
+To,
+The Branch Manager / Fraud Risk Department,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: URGENT — Unauthorized Transaction on Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], report an unauthorized transaction without my knowledge.
+
+  Date & Time: [TRANSACTION DATE AND TIME]  |  Amount: Rs. [TRANSACTION AMOUNT]
+  Mode: [TRANSACTION MODE]  |  Reference: [TRANSACTION REFERENCE]  |  Payee: [MERCHANT OR PAYEE NAME]
+
+I have NOT shared my PIN, OTP, or credentials with anyone. I request: immediate reversal, account block, fraud investigation, and written acknowledgment.
+
+Cybercrime Complaint No.: [CYBERCRIME COMPLAINT NUMBER]
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"C",title:"Internet Banking Activation",tag:"Digital",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Activation of Internet Banking — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER], request activation of the Internet Banking facility.
+
+  Registered Mobile: [PHONE]  |  Registered Email: [EMAIL]  |  Access Level: [ACCESS LEVEL]
+
+Enclosures: Internet Banking Activation Form (signed), Identity Proof copy.
+
+Kindly send login credentials to my registered email/mobile.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Date: [DATE]`},
+
+{cat:"C",title:"Password Reset Request",tag:"Digital",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Password Reset — Internet/Mobile Banking — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], am a registered Internet/Mobile Banking user for Account No. [ACCOUNT NUMBER]. I have [ISSUE] and am unable to access my account online.
+
+  User ID: [INTERNET BANKING USER ID]  |  Mobile: [PHONE]  |  Email: [EMAIL]
+
+Please reset my password and send temporary credentials to my registered contact.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Date: [DATE]`},
+
+{cat:"D",title:"Personal Loan Request",tag:"Loan",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Application for Personal Loan
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], account holder (Account No. [ACCOUNT NUMBER]) at your branch, wish to apply for a Personal Loan for [LOAN PURPOSE].
+
+  Loan Amount: Rs. [LOAN AMOUNT]  |  Tenure: [LOAN TENURE] months
+  Occupation: [EMPLOYMENT TYPE]  |  Employer: [EMPLOYER NAME]
+  Monthly Income: Rs. [MONTHLY INCOME]  |  Existing EMIs: Rs. [EXISTING EMI]  |  TIN: [TIN NUMBER]
+
+Enclosures: Loan Application Form, photograph, Identity Proof, Address Proof, salary slips/ITR, bank statements (6 months).
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"D",title:"Housing Loan Request",tag:"Loan",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Application for Housing / Home Loan
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], wish to apply for a Housing Loan for [LOAN PURPOSE].
+
+  Property: [PROPERTY ADDRESS]  |  Type: [PROPERTY TYPE]  |  Value: Rs. [PROPERTY VALUE]
+  Loan Amount: Rs. [LOAN AMOUNT]  |  Tenure: [LOAN TENURE] years  |  Rate: [RATE TYPE]
+  Monthly Income: Rs. [MONTHLY INCOME]  |  Existing EMIs: Rs. [EXISTING EMI]
+  Co-Applicant: [CO-APPLICANT NAME]  |  TIN: [TIN NUMBER]
+
+Enclosures: Application Form, KYC documents, property documents, income proof, bank statements.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"D",title:"Loan Foreclosure Request",tag:"Loan",body:`Date: [DATE]
+
+To,
+The Branch Manager / Loan Department,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Foreclosure of Loan Account No. [LOAN ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], borrower under [LOAN TYPE] Account No. [LOAN ACCOUNT NUMBER] (sanctioned Rs. [ORIGINAL LOAN AMOUNT] on [LOAN DISBURSEMENT DATE]), wish to foreclose the above loan.
+
+Please provide the Foreclosure Statement as on [FORECLOSURE DATE] including all charges. I shall arrange payment within [PAYMENT DAYS] days.
+
+Upon settlement, I request: release of all original documents, NOC, and written confirmation of loan closure.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Loan Account No.: [LOAN ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"D",title:"EMI Rescheduling Request",tag:"Loan",body:`Date: [DATE]
+
+To,
+The Branch Manager / Loan Department,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Rescheduling of EMI — Loan Account No. [LOAN ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], borrower under [LOAN TYPE] Account No. [LOAN ACCOUNT NUMBER] with current EMI of Rs. [CURRENT EMI] due on [EMI DATE] every month.
+
+Due to [REASON FOR RESCHEDULING], I request the following revised arrangement:
+
+  Revised EMI: Rs. [REVISED EMI AMOUNT]  |  Revised Tenure: [REVISED TENURE] months  |  Grace Period: [GRACE PERIOD] months
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Loan Account No.: [LOAN ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"E",title:"Bank Statement Request",tag:"Certificates",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Bank Account Statement — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER], request an account statement for:
+
+  Period: From [STATEMENT FROM DATE]  To  [STATEMENT TO DATE]
+  Purpose: [STATEMENT PURPOSE]  |  Format: [STATEMENT FORMAT]  |  Delivery: [DELIVERY MODE]
+
+Email: [EMAIL]  |  Enclosure: Identity Proof copy.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"E",title:"Balance Confirmation Letter",tag:"Certificates",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Balance Confirmation Letter — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER], require a Balance Confirmation Letter as on [BALANCE AS ON DATE] for [PURPOSE].
+
+The letter should confirm: account holder name, account number, type, balance as on date, bank seal and authorized signature.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"E",title:"No Objection Certificate (NOC) Request",tag:"Certificates",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for No Objection Certificate (NOC) — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER], request an NOC for [NOC PURPOSE].
+
+  Related Asset: [ASSET DETAILS]  |  Required For: [RECIPIENT OR AUTHORITY]
+
+I confirm there are no outstanding dues or liabilities on the said account/asset. Enclosures: Identity Proof, relevant documents.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"E",title:"Interest Certificate Request",tag:"Certificates",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Interest Certificate — FY [FINANCIAL YEAR]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT OR FD TYPE] No. [ACCOUNT NUMBER], require an Interest Certificate for FY [FINANCIAL YEAR] for [PURPOSE].
+
+  Interest Type: [INTEREST TYPE]  |  TIN Number: [TIN NUMBER]
+
+Kindly issue on official letterhead with bank seal and authorized signature.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"F",title:"Change of Address",tag:"Update",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Change of Registered Address — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], have relocated and wish to update my registered address.
+
+  OLD Address: [OLD ADDRESS]
+  NEW Address: [ADDRESS]
+
+Enclosures: New address proof — [ADDRESS PROOF TYPE]
+
+Kindly update my address across all bank records and confirm the same.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"F",title:"Change of Phone Number",tag:"Update",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Change of Registered Mobile Number — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], wish to update my registered mobile number.
+
+  Existing Mobile: [OLD MOBILE NUMBER]  |  New Mobile: [PHONE]
+
+Enclosure: Identity Proof copy.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Date: [DATE]`},
+
+{cat:"F",title:"KYC Update Request",tag:"Update",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for KYC Updation — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], wish to update my KYC details.
+
+Documents enclosed: Aadhaar Card, TIN Certificate, Passport/Voter ID, photograph (2 copies), Address Proof: [ADDRESS PROOF TYPE].
+
+  TIN: [TIN NUMBER]  |  Contact: [PHONE]  |  Email: [EMAIL]
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Date: [DATE]`},
+
+{cat:"G",title:"Failed Transaction Complaint",tag:"Transactions",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Complaint Regarding Failed Transaction — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], report a failed transaction where the amount was debited but the service/transfer was not completed.
+
+  Date & Time: [TRANSACTION DATE AND TIME]  |  Amount: Rs. [TRANSACTION AMOUNT]
+  Mode: [TRANSACTION MODE]  |  Reference: [TRANSACTION REFERENCE]
+  Beneficiary: [BENEFICIARY]  |  Failure: [WHAT FAILED]
+
+As per RBI guidelines, I request: immediate investigation, reversal within T+5 days, and written confirmation.
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"G",title:"Stop Payment Request (Cheque)",tag:"Transactions",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Stop Payment of Cheque — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], request IMMEDIATE stop payment of:
+
+  Cheque No.: [CHEQUE NUMBER]  |  Date: [CHEQUE DATE]  |  Amount: Rs. [CHEQUE AMOUNT]  |  Payee: [CHEQUE PAYEE NAME]
+  Reason: [STOP PAYMENT REASON]
+
+Please action this before the cheque is presented for clearing.
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"H",title:"Cheque Book Request",tag:"Cheque/DD",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Issuance of New Cheque Book — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of [ACCOUNT TYPE] Account No. [ACCOUNT NUMBER], request a new cheque book of [NUMBER OF CHEQUE LEAVES] leaves.
+
+  Delivery: [DELIVERY MODE — collect from branch / courier to: [ADDRESS]]
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"H",title:"Demand Draft Request",tag:"Cheque/DD",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Issuance of Demand Draft
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], request a Demand Draft:
+
+  Payee: [DD PAYEE NAME]  |  Amount: Rs. [DD AMOUNT IN FIGURES] (Rupees [DD AMOUNT IN WORDS] only)
+  Payable At: [DD PAYABLE CITY]  |  Purpose: [DD PURPOSE]
+  Delivery: [DD DELIVERY MODE]
+
+Please debit the DD amount plus charges from Account No. [ACCOUNT NUMBER].
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"I",title:"Company Account Opening",tag:"Business",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Opening of Current Account for [COMPANY NAME]
+
+Respected Sir/Madam,
+
+We, on behalf of [COMPANY NAME] ([COMPANY TYPE]), request opening of a Current Account.
+
+  Registration No.: [COMPANY REGISTRATION NUMBER]  |  Address: [COMPANY ADDRESS]
+  Incorporated: [INCORPORATION DATE]  |  Business: [BUSINESS NATURE]
+  Mode of Operation: [ACCOUNT OPERATION MODE]
+
+Authorized Signatories:
+  1. [SIGNATORY ONE NAME] — [SIGNATORY ONE DESIGNATION]
+  2. [SIGNATORY TWO NAME] — [SIGNATORY TWO DESIGNATION]
+
+Enclosures: Certificate of Incorporation/Partnership Deed, MOA & AOA, Board Resolution, KYC of directors, GST Certificate, Company TIN.
+
+Authorised Signatory: [YOUR FULL NAME] — [DESIGNATION]  |  Date: [DATE]`},
+
+{cat:"J",title:"Complaint Against Bank Service",tag:"Complaint",body:`Date: [DATE]
+
+To,
+The Branch Manager / Customer Grievance Cell,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Formal Complaint — [COMPLAINT SUBJECT] — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], formally register my complaint regarding [COMPLAINT SUBJECT] on [COMPLAINT DATE].
+
+Description:
+[DETAILED COMPLAINT DESCRIPTION]
+
+Previously raised with [PREVIOUSLY CONTACTED PERSON] on [PREVIOUS COMPLAINT DATE] — unresolved. I request a written resolution within [RESOLUTION DAYS] working days, else I will escalate to the Banking Ombudsman.
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Email: [EMAIL]  |  Date: [DATE]`},
+
+{cat:"J",title:"Fraud Transaction Complaint",tag:"Complaint",body:`Date: [DATE]
+
+To,
+The Branch Manager / Fraud Investigation Cell,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: URGENT — Fraudulent Transaction on Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], formally report a fraudulent transaction without my authorization.
+
+  Date & Time: [FRAUD TRANSACTION DATE AND TIME]  |  Amount: Rs. [FRAUD AMOUNT]
+  Mode: [FRAUD MODE]  |  Reference: [FRAUD REFERENCE]  |  Method: [FRAUD METHOD]
+
+I have NOT shared my credentials with anyone. Cybercrime Complaint No.: [CYBERCRIME COMPLAINT NUMBER]
+
+URGENT: Block account, reverse amounts, investigate, provide written response.
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"K",title:"Block Account Request",tag:"Security",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: URGENT — Request to Block Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], request IMMEDIATE blocking of all operations on my account.
+
+  Reason: [BLOCK REASON]
+
+No transactions (debit or credit) should be allowed until further written notice. I will visit the branch with identity proof within [VISIT WITHIN DAYS] working days.
+
+Yours faithfully urgently,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"K",title:"Report Suspicious Activity",tag:"Security",body:`Date: [DATE]
+
+To,
+The Branch Manager / Security & Compliance,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Report of Suspicious Activity on Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], report suspicious activity:
+
+  Date & Time: [SUSPICIOUS ACTIVITY DATE AND TIME]  |  Nature: [ACTIVITY TYPE]
+  Amount: Rs. [SUSPICIOUS AMOUNT]  |  Reference: [SUSPICIOUS REFERENCE]
+  Description: [SUSPICIOUS ACTIVITY DESCRIPTION]
+
+Account [already blocked / not yet blocked] via [BLOCKED VIA]. Please investigate, secure my account, and advise.
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"L",title:"Authorization Letter",tag:"Misc",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Authorization Letter — Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], authorize [AUTHORIZED PERSON NAME] ([AUTHORIZED PERSON RELATIONSHIP]) to act on my behalf for:
+
+  □ Cash withdrawal up to Rs. [WITHDRAWAL LIMIT] per visit
+  □ Statement / passbook collection  □ Document submission
+  □ Other: [OTHER AUTHORIZED ACTIVITY]
+
+Valid from [AUTHORIZATION START DATE] to [AUTHORIZATION END DATE].
+
+Authorized Person: [AUTHORIZED PERSON NAME]  |  ID: [AUTHORIZED PERSON ID TYPE] No. [AUTHORIZED PERSON ID NUMBER]  |  Phone: [AUTHORIZED PERSON PHONE]
+
+Enclosures: My Identity Proof, Authorized person's Identity Proof & Photograph.
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+
+{cat:"L",title:"Safe Deposit Locker Request",tag:"Misc",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Allotment of Safe Deposit Locker
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], wish to avail the Safe Deposit Locker facility for [LOCKER CONTENTS].
+
+  Locker Size: [LOCKER SIZE]  |  Purpose: [LOCKER PURPOSE]
+
+Enclosures: Locker Application Form, Identity Proof, Photographs (2), Latest bank statement.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  Contact: [PHONE]  |  Email: [EMAIL]  |  Date: [DATE]`},
+
+{cat:"L",title:"Dormant Account Activation",tag:"Misc",body:`Date: [DATE]
+
+To,
+The Branch Manager,
+[BANK NAME],
+[BRANCH NAME & ADDRESS]
+
+Subject: Request for Activation of Dormant Account No. [ACCOUNT NUMBER]
+
+Respected Sir/Madam,
+
+I, [YOUR FULL NAME], holder of Account No. [ACCOUNT NUMBER], request activation of my dormant account (inactive since [LAST ACTIVITY PERIOD]).
+
+Reason: [INACTIVITY REASON]
+
+Fresh KYC documents enclosed: Identity Proof, Address Proof, Photograph (2 copies). I assure regular usage henceforth.
+
+Thanking you,
+
+Yours faithfully,
+
+[YOUR FULL NAME]
+Account No.: [ACCOUNT NUMBER]  |  TIN: [TIN NUMBER]  |  Contact: [PHONE]  |  Date: [DATE]`},
+];
+
+/* ═══════════ FIELD MAP ═══════════ */
+const GMAP={
+  "DATE":"date","BANK NAME":"bankName","BRANCH NAME & ADDRESS":"branchFull","BRANCH NAME":"branchName",
+  "YOUR FULL NAME":"name","YOUR NAME":"name","ACCOUNT NUMBER":"acct",
+  "TIN NUMBER":"tin","PHONE":"phone","PHONE NUMBER":"phone",
+  "EMAIL":"email","EMAIL ID":"email","ADDRESS":"address","FULL ADDRESS":"address",
+};
+const CATS=[
+  {id:"ALL",label:"All Letters",emoji:"📋"},{id:"A",label:"Account Related",emoji:"🏦"},
+  {id:"B",label:"ATM / Card",emoji:"💳"},{id:"C",label:"Online & Mobile",emoji:"🌐"},
+  {id:"D",label:"Loans",emoji:"💰"},{id:"E",label:"Statements & Certs",emoji:"📄"},
+  {id:"F",label:"Personal Updates",emoji:"🔄"},{id:"G",label:"Transactions",emoji:"💸"},
+  {id:"H",label:"Cheque & DD",emoji:"📑"},{id:"I",label:"Business Banking",emoji:"🏢"},
+  {id:"J",label:"Complaints",emoji:"⚠️"},{id:"K",label:"Security",emoji:"🔒"},
+  {id:"L",label:"Miscellaneous",emoji:"📦"},{id:"Z",label:"My Custom Letters",emoji:"⭐"},
+];
+const CN={A:"Account Related Letters",B:"ATM / Debit / Credit Card Letters",C:"Online Banking & Mobile Banking",D:"Loan Related Letters",E:"Statement & Certificate Requests",F:"Personal Detail Updates",G:"Transaction & Payment Issues",H:"Cheque & Demand Draft Letters",I:"Business / Company Banking",J:"Complaints & Disputes",K:"Security & Access",L:"Miscellaneous Letters",Z:"My Custom Letters"};
+
+/* ═══════════ STATE ═══════════ */
+let CUSTOM=[];try{CUSTOM=JSON.parse(localStorage.getItem('blc')||'[]')}catch(e){}
+let LETTERS=[...BL,...CUSTOM];
+let G={bankName:"",branchName:"",branchFull:"",date:"",name:"",acct:"",tin:"",phone:"",email:"",address:""};
+let aCat="ALL",srchQ="",curL=null,curTab="up";
+
+/* ═══════════ INIT ═══════════ */
+window.onload=()=>{
+  const d=new Date();
+  document.getElementById('tb-date').value=d.toISOString().split('T')[0];
+  G.date=fd(d.toISOString().split('T')[0]);
+  buildSB();buildGrid();
+};
+function fd(s){const p=s.split('-');return`${p[2]}/${p[1]}/${p[0]}`}
+
+/* ═══════════ SYNC ═══════════ */
+function syncG(){
+  const sel=document.getElementById('tb-bank').value;
+  const isc=sel==='custom';
+  document.getElementById('cbank-wrap').style.display=isc?'flex':'none';
+  G.bankName=isc?document.getElementById('tb-bank-c').value:sel;
+  G.branchName=document.getElementById('tb-branch').value;
+  const raw=document.getElementById('tb-date').value;
+  if(raw)G.date=fd(raw);
+  G.name=document.getElementById('dp-name').value;
+  G.acct=document.getElementById('dp-acct').value;
+  G.tin=document.getElementById('dp-tin').value;
+  G.phone=document.getElementById('dp-phone').value;
+  G.email=document.getElementById('dp-email').value;
+  G.address=document.getElementById('dp-addr').value.replace(/\n/g,' ');
+  const ba=document.getElementById('dp-baddr').value.replace(/\n/g,' ');
+  G.branchFull=(G.branchName||'')+(ba?', '+ba:'');
+}
+function applyAll(){
+  if(!curL)return;
+  document.querySelectorAll('#letter-content .fi').forEach(inp=>{
+    const gk=GMAP[inp.dataset.key];
+    if(gk&&G[gk]){inp.value=G[gk];inp.classList.add('auto-f');inp.classList.remove('filled');autoSz(inp);}
+  });
+  updProg();toast('⚡ Auto-filled matching fields');
+}
+
+/* ═══════════ SIDEBAR ═══════════ */
+function buildSB(){
+  const hasCust=LETTERS.some(l=>l.cat==='Z');
+  document.getElementById('cat-list').innerHTML=CATS.filter(c=>c.id!=='Z'||hasCust).map(c=>{
+    const cnt=c.id==='ALL'?LETTERS.length:LETTERS.filter(l=>l.cat===c.id).length;
+    if(!cnt&&c.id!=='ALL')return'';
+    return`<button class="cat-btn${c.id===aCat?' active':''}" onclick="setCat('${c.id}')"><span class="emoji">${c.emoji}</span><span>${c.label}</span><span class="badge">${cnt}</span></button>`;
+  }).join('');
+}
+function setCat(id){aCat=id;buildSB();showGrid();buildGrid()}
+function doSearch(){srchQ=document.getElementById('sb-search').value;buildGrid()}
+
+/* ═══════════ GRID ═══════════ */
+function showGrid(){
+  document.getElementById('grid-view').style.display='block';
+  document.getElementById('editor-view').classList.remove('open');
+  document.getElementById('btn-back').style.display='none';
+  document.getElementById('btn-email').disabled=true;
+  document.getElementById('btn-print').disabled=true;
+  curL=null;
+}
+function buildGrid(){
+  const gv=document.getElementById('grid-view');
+  const q=srchQ.toLowerCase();
+  const fl=LETTERS.filter(l=>(aCat==='ALL'||l.cat===aCat)&&(!q||l.title.toLowerCase().includes(q)||l.tag.toLowerCase().includes(q)));
+  if(!fl.length){gv.innerHTML=`<div class="no-res"><div class="ico">🔍</div><p>No letters found</p></div>`;return;}
+  const grp={};fl.forEach(l=>{if(!grp[l.cat])grp[l.cat]=[];grp[l.cat].push(l);});
+  gv.innerHTML=Object.entries(grp).map(([cat,ls])=>`
+    <div>
+      <div class="sec-hdr"><h2>${CATS.find(c=>c.id===cat)?.emoji||''} ${CN[cat]}</h2><span>${ls.length} format${ls.length>1?'s':''}</span></div>
+      <div class="lg">${ls.map(l=>{
+        const idx=LETTERS.indexOf(l);
+        const isC=l.custom||l.cat==='Z';
+        const prev=l.body.replace(/\[[^\]]+\]/g,'…').substring(0,110);
+        return`<div class="lcard${isC?' custom':''}" onclick="openEd(${idx})">
+          <div class="lcard-h"><h3>${l.title}</h3><span class="ltag${isC?' custom':''}">${l.tag}</span></div>
+          <div class="lcard-prev">${prev}</div>
+          <div class="lcard-ft">
+            <button class="bxs bxs-gold" onclick="event.stopPropagation();openEd(${idx})">✏️ Open & Fill</button>
+            <button class="bxs bxs-ghost" onclick="event.stopPropagation();copyRaw(${idx},this)">📋 Copy</button>
+            ${isC?`<button class="bxs bxs-del" onclick="event.stopPropagation();delL(${idx})">🗑</button>`:''}
+          </div>
+        </div>`;
+      }).join('')}</div>
+    </div>`).join('');
+}
+
+/* ═══════════ EDITOR ═══════════ */
+function openEd(idx){
+  curL=LETTERS[idx];
+  document.getElementById('ed-title').textContent=curL.title;
+  document.getElementById('grid-view').style.display='none';
+  document.getElementById('editor-view').classList.add('open');
+  document.getElementById('btn-back').style.display='flex';
+  document.getElementById('btn-email').disabled=false;
+  document.getElementById('btn-print').disabled=false;
+  syncG();renderL();
+}
+function renderL(){
+  const c=document.getElementById('letter-content');c.innerHTML='';
+  if(!curL)return;
+  const re=/\[([^\]]+)\]/g;let li=0,m;
+  const fr=document.createDocumentFragment();
+  while((m=re.exec(curL.body))!==null){
+    if(m.index>li)fr.appendChild(document.createTextNode(curL.body.slice(li,m.index)));
+    const fn=m[1],key=fn.trim().toUpperCase();
+    const inp=document.createElement('input');
+    inp.type='text';inp.className='fi';inp.placeholder=fn;inp.dataset.key=key;inp.dataset.orig=fn;
+    const gk=GMAP[key];
+    if(gk&&G[gk]){inp.value=G[gk];inp.classList.add('auto-f');}
+    inp.style.width=Math.max(fn.length*7+20,50)+'px';
+    inp.addEventListener('input',function(){
+      autoSz(this);
+      this.value?this.classList.add('filled'):this.classList.remove('filled','auto-f');
+      document.querySelectorAll(`.fi[data-key="${this.dataset.key}"]`).forEach(el=>{
+        if(el!==this){el.value=this.value;autoSz(el);el.value?el.classList.add('filled'):el.classList.remove('filled','auto-f');}
+      });
+      updProg();
+    });
+    fr.appendChild(inp);li=m.index+m[0].length;
+  }
+  if(li<curL.body.length)fr.appendChild(document.createTextNode(curL.body.slice(li)));
+  c.appendChild(fr);updProg();
+}
+function autoSz(inp){
+  const s=document.createElement('span');
+  s.style.cssText='position:absolute;visibility:hidden;white-space:pre;font-family:Crimson Text,Georgia,serif;font-size:12pt;padding:0 4px';
+  s.textContent=inp.value||inp.placeholder;document.body.appendChild(s);
+  inp.style.width=Math.max(s.offsetWidth+16,50)+'px';document.body.removeChild(s);
+}
+function updProg(){
+  const all=document.querySelectorAll('#letter-content .fi');
+  const done=[...all].filter(i=>i.value.trim()).length;
+  const pct=all.length?Math.round(done/all.length*100):0;
+  document.getElementById('fpbar-i').style.width=pct+'%';
+  document.getElementById('fp-done').textContent=done;
+  document.getElementById('fp-total').textContent=all.length;
+}
+function clearFields(){
+  document.querySelectorAll('#letter-content .fi').forEach(i=>{i.value='';i.classList.remove('filled','auto-f');autoSz(i);});
+  updProg();
+}
+function getFilledTxt(){
+  if(!curL)return'';
+  let t=curL.body;
+  const vals={};
+  document.querySelectorAll('#letter-content .fi').forEach(i=>{if(!vals[i.dataset.orig])vals[i.dataset.orig]=i.value||`[${i.dataset.orig}]`;});
+  Object.entries(vals).forEach(([k,v])=>{t=t.split('['+k+']').join(v);});
+  return t;
+}
+
+/* ═══════════ PRINT / EMAIL ═══════════ */
+function doPrint(){if(!curL)return;window.print();}
+function doEmail(){
+  if(!curL)return;
+  const sub=encodeURIComponent(curL.title+(G.bankName?' — '+G.bankName:''));
+  const bdy=encodeURIComponent(getFilledTxt());
+  if(bdy.length>1800){navigator.clipboard.writeText(getFilledTxt());toast('📋 Letter copied — paste into your email');}
+  else window.location.href=`mailto:?subject=${sub}&body=${bdy}`;
+}
+function copyRaw(idx,btn){
+  navigator.clipboard.writeText(LETTERS[idx].body).then(()=>{btn.textContent='✅';setTimeout(()=>btn.textContent='📋 Copy',2000);});
+}
+
+/* ═══════════ UPLOAD MODAL ═══════════ */
+function openModal(){document.getElementById('umodal').classList.add('open');resetModal();}
+function closeModal(e){if(!e||e.target===document.getElementById('umodal'))document.getElementById('umodal').classList.remove('open');}
+function resetModal(){
+  document.getElementById('up-st').className='up-st';document.getElementById('up-st').textContent='';
+  document.getElementById('flinput').value='';
+  ['mf-title','mf-body','mf-tag'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mf-cat').value='Z';
+  switchTab('up');
+}
+function switchTab(t){
+  curTab=t;
+  document.getElementById('tab-up').style.display=t==='up'?'block':'none';
+  document.getElementById('tab-mn').style.display=t==='mn'?'block':'none';
+  document.getElementById('tab-up-btn').className='btn '+(t==='up'?'btn-purple':'btn-outline');
+  document.getElementById('tab-mn-btn').className='btn '+(t==='mn'?'btn-purple':'btn-outline');
+}
+function handleFile(input){
+  const file=input.files[0];if(!file)return;
+  const st=document.getElementById('up-st');
+  st.className='up-st';st.textContent='Reading file…';st.style.display='block';
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='txt'){
+    const r=new FileReader();r.onload=e=>procTxt(e.target.result,file.name);r.readAsText(file);
+  }else if(ext==='docx'||ext==='doc'){
+    if(typeof mammoth==='undefined'){st.className='up-st err';st.textContent='⚠️ Could not load mammoth.js. Try .txt format or enter manually.';return;}
+    const r=new FileReader();r.onload=e=>{
+      mammoth.extractRawText({arrayBuffer:e.target.result}).then(res=>procTxt(res.value,file.name)).catch(()=>{st.className='up-st err';st.textContent='❌ Could not read .docx. Try saving as .txt and uploading again.';});
+    };r.readAsArrayBuffer(file);
+  }else{st.className='up-st err';st.textContent='❌ Unsupported type. Use .docx or .txt';}
+}
+function procTxt(txt,fname){
+  const st=document.getElementById('up-st');
+  txt=txt.trim();
+  if(!txt){st.className='up-st err';st.textContent='❌ File appears empty.';return;}
+  const lines=txt.split('\n').map(l=>l.trim()).filter(l=>l);
+  const guessTitle=lines[0].replace(/^(subject:|to:|date:)/i,'').trim()||fname.replace(/\.(docx?|txt)$/i,'');
+  switchTab('mn');
+  document.getElementById('mf-title').value=guessTitle;
+  document.getElementById('mf-body').value=txt;
+  document.getElementById('mf-cat').value='Z';
+  document.getElementById('mf-tag').value='Custom';
+  st.className='up-st ok';
+  st.textContent=`✅ "${fname}" loaded — ${(txt.match(/\[[^\]]+\]/g)||[]).length} fields detected. Review and click Save.`;
+}
+function saveLetter(){
+  const title=document.getElementById('mf-title').value.trim();
+  const body=document.getElementById('mf-body').value.trim();
+  const cat=document.getElementById('mf-cat').value;
+  const tag=document.getElementById('mf-tag').value.trim()||'Custom';
+  if(!title||!body){toast('⚠️ Title and body are required');return;}
+  const nl={cat,title,tag,body,custom:true};
+  CUSTOM.push(nl);
+  try{localStorage.setItem('blc',JSON.stringify(CUSTOM));}catch(e){}
+  LETTERS=[...BL,...CUSTOM];
+  buildSB();buildGrid();closeModal();
+  toast(`✅ "${title}" saved to My Custom Letters`);
+}
+function delL(idx){
+  const l=LETTERS[idx];
+  if(!confirm(`Delete "${l.title}"?`))return;
+  CUSTOM=CUSTOM.filter(c=>c!==l);
+  try{localStorage.setItem('blc',JSON.stringify(CUSTOM));}catch(e){}
+  LETTERS=[...BL,...CUSTOM];
+  buildSB();buildGrid();toast('🗑 Letter format deleted');
+}
+
+/* drag/drop */
+const udrop=document.getElementById('udrop');
+udrop.addEventListener('dragover',e=>{e.preventDefault();udrop.classList.add('drag')});
+udrop.addEventListener('dragleave',()=>udrop.classList.remove('drag'));
+udrop.addEventListener('drop',e=>{
+  e.preventDefault();udrop.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('flinput').files=dt.files;handleFile(document.getElementById('flinput'));}
+});
+
+/* toast */
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
